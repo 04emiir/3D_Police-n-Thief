@@ -10,6 +10,8 @@ public class GenerateBoard : MonoBehaviour {
 
     private GameObject tile;
     private Dictionary<int, string> tiles = new Dictionary<int, string>();
+
+    public GameController gc;
     void Start() {
         tiles.Add(1, "A");
         tiles.Add(2, "B");
@@ -23,6 +25,8 @@ public class GenerateBoard : MonoBehaviour {
         PopulateBoard();
         PlacePolices();
         PlaceThief();
+        gc = this.GetComponent<GameController>();
+        gc.StartGame();
     }  
 
     private void PopulateBoard() {

@@ -10,88 +10,111 @@ public class GameController : MonoBehaviour {
 
     public TextMeshProUGUI currentTurn;
 
-    private GameObject selectedPolice;
-    private GameObject thiefGO;
+    int thiefPositionLetter;
+    int thiefPositionNumber;
+    private GameObject thief;
+
+    int[] policePositionsLetter = new int[4];
+    int[] policePositionsNumber = new int[4];
+
+    private Dictionary<int, string> tiles = new Dictionary<int, string>();
     void Start() {
-
+        tiles.Add(1, "A");
+        tiles.Add(2, "B");
+        tiles.Add(3, "C");
+        tiles.Add(4, "D");
+        tiles.Add(5, "E");
+        tiles.Add(6, "F");
+        tiles.Add(7, "G");
+        tiles.Add(8, "H");
+        CurrentTurn();
     }
 
-    // Update is called once per frame
+    public void StartGame() {
+        thief = GameObject.FindGameObjectWithTag("Thief");
+        UpdatePolicePositions();
+        UpdateThiefPosition();
+    }
+
     void Update() {
-        //if (Input.GetMouseButtonDown(0)) {
-        //    RaycastHit raycastHit;
-        //    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //    if (Physics.Raycast(ray, out raycastHit, 100f)) {
-        //        if (raycastHit.transform != null) {
-        //            CheckPossibleMovement(raycastHit.transform.gameObject);
-        //        }
-        //    }
-        //}
+        CheckAllDiagonal();
+
+  
     }
 
-    public void CheckCurrentTurn() {
+    public void CurrentTurn() {
         if (isTurnThief) {
-            currentTurn.text = "Turno Ladrón";
+            currentTurn.text = "Turno Ladron";
             currentTurn.color = Color.red;
         } else {
-            currentTurn.text = "Turno Policías";
+            currentTurn.text = "Turno Policias";
             currentTurn.color = Color.blue;
         }
 
     }
 
-    //public void CheckPossibleMovement(GameObject gameObject) {
-    //    if (gameObject.tag == "Thief") {
-    //        isSelectedThief = !isSelectedThief;
-    //        isSelectedPolice = false;
-
-    //    }
-
-    //    if (gameObject.tag == "Police") {
-    //        isSelectedThief = false;
-    //        isSelectedPolice = !isSelectedThief;
-    //        selectedPolice = gameObject;
-    //        if (isSelectedPolice) {
-    //            selectedPolice.GetComponent<Outline>().enabled = true;
-    //        } else {
-    //            selectedPolice.GetComponent<Outline>().enabled = false;
-    //        }
-
-    //    }
-
-    //    if (gameObject.tag == "Tile" && (isSelectedPolice || isSelectedThief)) {
-    //        if(isSelectedPolice)
-    //            MovePiece(selectedPolice, gameObject.transform);
-    //        if(isSelectedThief)
-    //            MovePiece(GameObject.FindGameObjectWithTag("Thief"), gameObject.transform);
-    //    }
-    //}
-
-    public void CheckMovementThief() {
-        // Betweewn (1,0,1) and (8,0,8)
-        /* (x+1, y, z+1) right+up
-         * (x+1, y, z-1) right+down
-         * (x-1, y, z+1) left+up
-         * (x-1, y, z-1) left+down
-         */
-        float thiefPositionRow = thiefGO.transform.position.z;
-        float thiefPositionColumn = thiefGO.transform.position.x;
-
-        if ((thiefPositionColumn + 1) <= 8 && (thiefPositionColumn + 1) <= 8) {
-            //can move (x+1, y, z+1) right+up
+    public void UpdatePolicePositions() {
+        int cont = 0;
+        foreach (GameObject police in GameObject.FindGameObjectsWithTag("Police")) {
+            policePositionsNumber[cont] = (int)police.transform.position.z;
+            policePositionsLetter[cont] = (int)police.transform.position.x;
+            cont++;
         }
-        if ((thiefPositionColumn + 1) <= 8 && (thiefPositionColumn - 1) >= 1) {
-            //can move  (x+1, y, z-1) right+down
-        }
-        if ((thiefPositionColumn - 1) >= 1 && (thiefPositionColumn - 1) >= 1) {
-            //can move (x-1, y, z+1) left+up
-        }
-        if ((thiefPositionColumn - 1) >= 8 && (thiefPositionColumn + 1) <= 8) {
-            //can move (x-1, y, z-1) left+down
-        }
+    }
 
+    public void UpdateThiefPosition() {
+        thiefPositionNumber = (int)thief.transform.position.z;
+        thiefPositionLetter = (int)thief.transform.position.x;
+    }
 
+    public bool CheckBlackLetterBlackNumber(int letter, int number) {
+        // Can move towards the black numbers zone[z++] and black letters zone [x++])
+        return (column + 1 <= 8 && row + 1 <= 8);
+    }
 
+    public bool CheckBlackLetterWhiteNumber(int letter, int number) {
+        // Can move towards the black number zone [z++] and white letters zone [x--]
+        return (column - 1 >= 1 && row - 1 >= 1);
+    }
+
+    public bool CheckWhiteLetterWhiteNumber(int letter, int number) {
+        // Can move diagonally to the right and backwards?
+        return (column + 1 <= 8 && row - 1 >= 1);
+    }
+
+    public bool CheckWhiteLetterBlackNumber(int letter, int number) {
+        // Can move diagonally to the left and backwards?
+        return (column - 1 >= 8 && row + 1 <= 8);
+    }
+
+    public void TileEnable(Color color, int letter, int number) {
+        var availabletTile = GameObject.Find("Tile" + tiles[row] + column);
+        Debug.Log(row);
+        Debug.Log(column);
+        availabletTile.GetComponent<Outline>().enabled = true;
+        availabletTile.GetComponent<Outline>().OutlineColor = Color.red;
+    }
+
+    public void CheckAllDiagonal() {
+        // z=0 inicio de blancas (abajo)
+        // z=8 inicio de negras (arriba)
+        int thiefPositionNumber = (int)thief.transform.position.z;
+
+        // x=0 inicio lateral blancas (izquierda)
+        // x=8 incio lateral negras (deracha)
+        int thiefPositionLetter = (int)thief.transform.position.x;
+        if (CanMoveFDiagonalR(thiefPositionRow, thiefPositionColumn)) {
+            TileEnable(Color.red, thiefPositionRow, thiefPositionColumn);
+        }
+        if (CanMoveFDiagonalR(thiefPositionRow, thiefPositionColumn)) {
+            TileEnable(Color.red, thiefPositionRow, thiefPositionColumn);
+        }
+        if (CanMoveFDiagonalR(thiefPositionRow, thiefPositionColumn)) {
+            TileEnable(Color.red, thiefPositionRow, thiefPositionColumn);
+        }
+        if (CanMoveFDiagonalR(thiefPositionRow, thiefPositionColumn)) {
+            TileEnable(Color.red, thiefPositionRow, thiefPositionColumn);
+        }
     }
 
     public void MovePiece (GameObject piece, Transform newPosition) {
