@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameController : MonoBehaviour {
     bool isTurnThief = true;
@@ -19,15 +21,21 @@ public class GameController : MonoBehaviour {
     int selectedPolicePositionLetter;
     int selectedPolicePositionNumber;
 
+    int raycastPosX;
+    int raycastPosZ;
+
     private GameObject thief;
     private GameObject selectedPolice;
 
     int[] policePositionsLetter = new int[4];
     int[] policePositionsNumber = new int[4];
 
+    bool objectMoving;
+
     private Dictionary<int, string> tiles = new Dictionary<int, string>();
 
     public void StartGame() {
+        objectMoving = false;
         tiles.Add(1, "A");
         tiles.Add(2, "B");
         tiles.Add(3, "C");
@@ -46,28 +54,26 @@ public class GameController : MonoBehaviour {
     void Update() {
         ThiefWin();
         PoliceWin();
-        if (isTurnThief) {
+
+        if (isTurnThief && !objectMoving) {
             if (Input.GetMouseButtonDown(0)) {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
                 if (Physics.Raycast(ray, out hit, 100)) {
                     if (hit.transform.gameObject.tag == "Tile") {
-                        int posX = (int)hit.transform.position.x;
-                        int posZ = (int)hit.transform.position.z;
-                        var availabletTile = GameObject.Find("Tile" + tiles[posX] + "-" + posZ);
+                        raycastPosX = (int)hit.transform.position.x;
+                        raycastPosZ = (int)hit.transform.position.z;
+                        var availabletTile = GameObject.Find("Tile" + tiles[raycastPosX] + "-" + raycastPosZ);
                         if (availabletTile.GetComponent<Outline>().enabled == true) {
-                            MovePiece(thief, new Vector3(posX, thief.transform.position.y, posZ));
-                            DisableCheckThiefMovement();
-                            ChangeTurn();
-                            CurrentTurnDisplay();
+                            objectMoving = true;
                         }
                     }
 
 
                 }
             }
-        } else if (isTurnPolice) {
+        } else if (isTurnPolice && !objectMoving) {
             if (Input.GetMouseButtonDown(0)) {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -80,20 +86,39 @@ public class GameController : MonoBehaviour {
                         UpdateSelectedPolicePosition();
                         CheckPoliceMovements();
                     } else if (hit.transform.gameObject.tag == "Tile" && selectedPolice != null) {
-                        int posX = (int)hit.transform.position.x;
-                        int posZ = (int)hit.transform.position.z;
-                        var availabletTile = GameObject.Find("Tile" + tiles[posX] + "-" + posZ);
+                        raycastPosX = (int)hit.transform.position.x;
+                        raycastPosZ = (int)hit.transform.position.z;
+                        var availabletTile = GameObject.Find("Tile" + tiles[raycastPosX] + "-" + raycastPosZ);
                         if (availabletTile.GetComponent<Outline>().enabled == true) {
-                            MovePiece(selectedPolice, new Vector3(posX, selectedPolice.transform.position.y, posZ));
-                            DisableCheckPoliceMovements();
-                            selectedPolice = null;
-                            ChangeTurn();
-                            CurrentTurnDisplay();
+                            objectMoving = true;
                         }
                     }
 
 
                 }
+            }
+        }
+
+        if (objectMoving && isTurnThief) {
+            PlayWalking(thief);
+            thief.transform.position = Vector3.MoveTowards(thief.transform.position, new Vector3(raycastPosX, thief.transform.position.y, raycastPosZ), 3f * Time.deltaTime);
+            if (thief.transform.position == new Vector3(raycastPosX, thief.transform.position.y, raycastPosZ)) {
+                objectMoving = false;
+                DisableCheckThiefMovement();
+                ChangeTurn();
+                CurrentTurnDisplay();
+                PlayIdle(thief);
+            }
+        } else if (objectMoving && isTurnPolice) {
+            PlayWalking(selectedPolice);
+            selectedPolice.transform.position = Vector3.MoveTowards(selectedPolice.transform.position, new Vector3(raycastPosX, selectedPolice.transform.position.y, raycastPosZ), 3f * Time.deltaTime);
+            if (selectedPolice.transform.position == new Vector3(raycastPosX, selectedPolice.transform.position.y, raycastPosZ)) {
+                objectMoving = false;
+                PlayIdle(selectedPolice);
+                selectedPolice = null;
+                DisableCheckPoliceMovements();
+                ChangeTurn();
+                CurrentTurnDisplay();
             }
         }
 
@@ -221,10 +246,10 @@ public class GameController : MonoBehaviour {
         // x=0 inicio lateral blancas (izquierda)
         // x=8 incio lateral negras (deracha)
 
-        if (CheckDiagonalC(selectedPolicePositionNumber, selectedPolicePositionLetter) && !CheckThiefInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter + 1)) {
+        if (CheckDiagonalC(selectedPolicePositionNumber, selectedPolicePositionLetter) && !CheckThiefInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter + 1) && !CheckPoliceInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter + 1)) {
             TileEnable(Color.blue, selectedPolicePositionNumber - 1, selectedPolicePositionLetter + 1);
         }
-        if (CheckDiagonalD(selectedPolicePositionNumber, selectedPolicePositionLetter) && !CheckThiefInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter - 1)) {
+        if (CheckDiagonalD(selectedPolicePositionNumber, selectedPolicePositionLetter) && !CheckThiefInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter - 1) && !CheckPoliceInDiagonal(selectedPolicePositionNumber - 1, selectedPolicePositionLetter - 1)) {
             TileEnable(Color.blue, selectedPolicePositionNumber - 1, selectedPolicePositionLetter - 1);
         }
 
@@ -255,9 +280,13 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    public void MovePiece (GameObject piece, Vector3 newPosition) {
-            piece.transform.position = newPosition;
-
+    public void PlayWalking(GameObject objecto) { 
+        Animator animator = objecto.transform.GetChild(0).GetComponent<Animator>();
+        animator.Play("Walking");
+    }
+    public void PlayIdle(GameObject objecto) {
+        Animator animator = objecto.transform.GetChild(0).GetComponent<Animator>();
+        animator.Play("Idle");
     }
 
     public void ThiefWin() {

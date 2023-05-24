@@ -51,17 +51,17 @@ public class GenerateBoard : MonoBehaviour {
 
     private void PlaceThief() {
         Transform thiefSpawn = GameObject.Find("TileD-1").transform;
-        Instantiate(thief, new Vector3(thiefSpawn.transform.position.x, thiefSpawn.transform.position.y+thief.transform.localScale.y/2 + 0.5f, thiefSpawn.transform.position.z), Quaternion.identity);
+        Instantiate(thief, new Vector3(thiefSpawn.transform.position.x, 0.5f, thiefSpawn.transform.position.z), Quaternion.identity);
     }
     private void PlacePolices() {
         Transform policeSpawnA = GameObject.Find("TileA-8").transform;
         Transform policeSpawnB = GameObject.Find("TileC-8").transform;
         Transform policeSpawnC = GameObject.Find("TileE-8").transform;
         Transform policeSpawnD = GameObject.Find("TileG-8").transform;
-        Instantiate(police, new Vector3(policeSpawnA.transform.position.x, policeSpawnA.transform.position.y + police.transform.localScale.y / 2 + 0.5f, policeSpawnA.transform.position.z), Quaternion.identity);
-        Instantiate(police, new Vector3(policeSpawnB.transform.position.x, policeSpawnB.transform.position.y + police.transform.localScale.y / 2 + 0.5f, policeSpawnB.transform.position.z), Quaternion.identity);
-        Instantiate(police, new Vector3(policeSpawnC.transform.position.x, policeSpawnC.transform.position.y + police.transform.localScale.y / 2 + 0.5f, policeSpawnC.transform.position.z), Quaternion.identity);
-        Instantiate(police, new Vector3(policeSpawnD.transform.position.x, policeSpawnD.transform.position.y + police.transform.localScale.y / 2 + 0.5f, policeSpawnD.transform.position.z), Quaternion.identity);
+        Instantiate(police, new Vector3(policeSpawnA.transform.position.x, 0.5f, policeSpawnA.transform.position.z), Quaternion.identity);
+        Instantiate(police, new Vector3(policeSpawnB.transform.position.x, 0.5f, policeSpawnB.transform.position.z), Quaternion.identity);
+        Instantiate(police, new Vector3(policeSpawnC.transform.position.x, 0.5f, policeSpawnC.transform.position.z), Quaternion.identity);
+        Instantiate(police, new Vector3(policeSpawnD.transform.position.x, 0.5f, policeSpawnD.transform.position.z), Quaternion.identity);
 
     }
 }
