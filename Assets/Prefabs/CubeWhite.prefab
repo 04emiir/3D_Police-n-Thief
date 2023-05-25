@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5260901930727820406}
   - component: {fileID: 4229591338426945152}
   - component: {fileID: 5877905303660219622}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CubeWhite
   m_TagString: Tile
   m_Icon: {fileID: 0}

@@ -27,6 +27,9 @@ public class GameController : MonoBehaviour {
     private GameObject thief;
     private GameObject selectedPolice;
 
+    private SceneLoader scene;
+
+
     int[] policePositionsLetter = new int[4];
     int[] policePositionsNumber = new int[4];
 
@@ -36,6 +39,7 @@ public class GameController : MonoBehaviour {
 
     public void StartGame() {
         objectMoving = false;
+        scene = this.gameObject.GetComponent<SceneLoader>();
         tiles.Add(1, "A");
         tiles.Add(2, "B");
         tiles.Add(3, "C");
@@ -59,8 +63,8 @@ public class GameController : MonoBehaviour {
             if (Input.GetMouseButtonDown(0)) {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-
-                if (Physics.Raycast(ray, out hit, 100)) {
+                LayerMask mask = LayerMask.GetMask("GetRaycast");
+                if (Physics.Raycast(ray, out hit, 100, mask)) {
                     if (hit.transform.gameObject.tag == "Tile") {
                         raycastPosX = (int)hit.transform.position.x;
                         raycastPosZ = (int)hit.transform.position.z;
@@ -77,8 +81,8 @@ public class GameController : MonoBehaviour {
             if (Input.GetMouseButtonDown(0)) {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-
-                if (Physics.Raycast(ray, out hit, 100)) {
+                LayerMask mask = LayerMask.GetMask("GetRaycast");
+                if (Physics.Raycast(ray, out hit, 100, mask)) {
                     if (hit.transform.gameObject.tag == "Police") {
                         if(selectedPolice != null)  
                             DisableCheckPoliceMovements();
@@ -291,7 +295,7 @@ public class GameController : MonoBehaviour {
 
     public void ThiefWin() {
         if(thief.transform.position.z == 8) {
-            Debug.Log("el ladron ");
+            scene.LoadTheScene("ThiefWon");
         }
 
     }
@@ -301,10 +305,12 @@ public class GameController : MonoBehaviour {
             (!CheckDiagonalB(thiefPositionNumber, thiefPositionLetter) || CheckPoliceInDiagonal(thiefPositionNumber + 1, thiefPositionLetter + 1)) &&
             (!CheckDiagonalC(thiefPositionNumber, thiefPositionLetter) || CheckPoliceInDiagonal(thiefPositionNumber - 1, thiefPositionLetter + 1)) &&
             (!CheckDiagonalD(thiefPositionNumber, thiefPositionLetter) || CheckPoliceInDiagonal(thiefPositionNumber - 1, thiefPositionLetter - 1)) ) {
-            Debug.Log("el ladron pierde");
+            scene.LoadTheScene("PoliceWon");
 
         }
 
     }
+
+
 
 }

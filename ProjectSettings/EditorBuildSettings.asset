@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Menu.unity
+    guid: 80c245a73b965f745a633c3022938931
+  - enabled: 1
+    path: Assets/Scenes/Game.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/PoliceWon.unity
+    guid: a7ddacf925f292049b2bbe588005acd6
+  - enabled: 1
+    path: Assets/Scenes/ThiefWon.unity
+    guid: ccf4e9f7a6138f44c94fb613f151031d
   m_configObjects: {}
